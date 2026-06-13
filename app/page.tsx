@@ -46,19 +46,26 @@ export default function Home() {
         <div>
           {user ? (
             <div className="flex items-center gap-3">
-              <img
-                src={user.user_metadata?.avatar_url || 'https://www.gravatar.com/avatar/?d=mp'}
-                alt="avatar"
-                className="w-9 h-9 rounded-full border-2 border-blue-200"
-              />
-              <span className="text-gray-700 font-medium hidden md:block">
-                {user.user_metadata?.full_name || user.email}
-              </span>
+              <a href="/leaderboard">
+                <button className="bg-purple-50 text-purple-600 font-semibold px-4 py-2 rounded-lg hover:bg-purple-100 transition text-sm">
+                  🏆 Leaderboard
+                </button>
+              </a>
               <a href="/dashboard">
                 <button className="bg-blue-50 text-blue-600 font-semibold px-4 py-2 rounded-lg hover:bg-blue-100 transition text-sm">
                   Dashboard
                 </button>
               </a>
+              <div className="flex items-center gap-2 border-l pl-3">
+                <img
+                  src={user.user_metadata?.avatar_url || 'https://www.gravatar.com/avatar/?d=mp'}
+                  alt="avatar"
+                  className="w-9 h-9 rounded-full border-2 border-blue-200"
+                />
+                <span className="text-gray-700 font-medium hidden md:block">
+                  {user.user_metadata?.full_name || user.email}
+                </span>
+              </div>
               <button
                 onClick={handleLogout}
                 className="bg-red-50 text-red-500 font-semibold px-4 py-2 rounded-lg hover:bg-red-100 transition text-sm"

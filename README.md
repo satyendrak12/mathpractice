@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MathPractice 📐
+
+A free MCQ practice platform for Class 11 & 12 Math students built with Next.js and Supabase.
+
+## Live Demo
+Coming soon...
+
+## Tech Stack
+- **Frontend** - Next.js 16, Tailwind CSS
+- **Backend** - Supabase (Database + Auth)
+- **Hosting** - Vercel
+
+## Features
+- ✅ Chapter-wise MCQ tests (Class 11 & 12)
+- ✅ Google Login
+- ✅ 30 second quiz timer
+- ✅ Skip questions
+- ✅ Instant results with explanations
+- ✅ Student Dashboard with progress tracking
+- ✅ Leaderboard
 
 ## Getting Started
 
-First, run the development server:
-
+### 1. Clone the repository
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/satyendrak12/mathpractice.git
+cd mathpractice
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Install dependencies
+```bash
+npm install
+```
+### 3. Create .env.local file
+Create a `.env.local` file in the root folder:
+```
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 4. Set up Supabase
+- Create a new project on [supabase.com](https://supabase.com)
+- Run the SQL from `supabase/schema.sql` in your Supabase SQL Editor
+- Enable Google Auth in Supabase Authentication settings
 
-## Learn More
+### 5. Run the project
+```bash
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Contributing
+Pull requests are welcome! For major changes, please open an issue first.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## License
+MIT
