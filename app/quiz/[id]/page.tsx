@@ -16,14 +16,13 @@ export default function QuizPage() {
   const [skipped, setSkipped] = useState(0)
   const [user, setUser] = useState<any>(null)
   const [reviewList, setReviewList] = useState<any[]>([])
+  const [timeLeft, setTimeLeft] = useState(30)
+  const [timerActive, setTimerActive] = useState(true)
 
   useEffect(() => {
-    // Get current user
     supabase.auth.getSession().then(({ data }) => {
       setUser(data.session?.user ?? null)
     })
-
-    // Fetch questions
     async function fetchQuestions() {
       const { data, error } = await supabase
         .from('questions')
@@ -35,15 +34,32 @@ export default function QuizPage() {
     fetchQuestions()
   }, [id])
 
+  // Timer countdown
+  useEffect(() => {
+    if (!timerActive || answered || questions.length === 0) return
+    if (timeLeft === 0) {
+      handleSkip()
+      return
+    }
+    const timer = setTimeout(() => setTimeLeft(prev => prev - 1), 1000)
+    return () => clearTimeout(timer)
+  }, [timeLeft, timerActive, answered, questions])
+
+  // Reset timer on new question
+  useEffect(() => {
+    setTimeLeft(30)
+    setTimerActive(true)
+  }, [current])
+
   async function handleAnswer(option: string) {
     if (answered) return
+    setTimerActive(false)
     setSelected(option)
     setAnswered(true)
 
     const isCorrect = option === questions[current].correct_answer
     if (isCorrect) setScore(prev => prev + 1)
 
-    // Add to review list
     setReviewList(prev => [...prev, {
       question: questions[current].question_text,
       selected: option,
@@ -52,7 +68,6 @@ export default function QuizPage() {
       isCorrect
     }])
 
-    // Save attempt to Supabase
     if (user) {
       await supabase.from('attempts').insert({
         user_id: user.id,
@@ -74,6 +89,7 @@ export default function QuizPage() {
   }
 
   function handleSkip() {
+    setTimerActive(false)
     setSkipped(prev => prev + 1)
     setReviewList(prev => [...prev, {
       question: questions[current].question_text,
@@ -94,13 +110,10 @@ export default function QuizPage() {
   if (showResult) return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-10">
       <div className="max-w-2xl mx-auto px-4">
-
-        {/* Score Card */}
         <div className="bg-white rounded-2xl shadow-lg p-10 text-center mb-8">
           <div className="text-6xl mb-4">🎉</div>
           <h2 className="text-3xl font-extrabold text-blue-600">Quiz Complete!</h2>
           <p className="text-gray-500 mt-2 mb-6">Here's how you did</p>
-
           <div className="grid grid-cols-3 gap-4 mb-8">
             <div className="bg-green-50 rounded-xl p-4">
               <p className="text-2xl font-bold text-green-600">{score}</p>
@@ -115,11 +128,9 @@ export default function QuizPage() {
               <p className="text-xs text-gray-500 mt-1">Skipped</p>
             </div>
           </div>
-
           <p className="text-xl font-bold text-gray-800 mb-6">
             Score: {score} / {questions.length}
           </p>
-
           <div className="flex gap-3">
             <a href={`/quiz/${id}`} className="flex-1 block bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition text-center">
               Retry Quiz 🔄
@@ -130,7 +141,6 @@ export default function QuizPage() {
           </div>
         </div>
 
-        {/* Question Review */}
         <h3 className="text-xl font-bold text-gray-800 mb-4">📝 Question Review</h3>
         <div className="flex flex-col gap-4">
           {reviewList.map((item, index) => (
@@ -146,12 +156,15 @@ export default function QuizPage() {
             </div>
           ))}
         </div>
-
       </div>
     </div>
   )
 
   const q = questions[current]
+
+  // Timer color
+  const timerColor = timeLeft > 15 ? 'text-green-600' : timeLeft > 5 ? 'text-orange-500' : 'text-red-500'
+  const timerBg = timeLeft > 15 ? 'bg-green-50 border-green-200' : timeLeft > 5 ? 'bg-orange-50 border-orange-200' : 'bg-red-50 border-red-200'
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-10">
@@ -161,6 +174,10 @@ export default function QuizPage() {
         <div className="flex items-center justify-between mb-6">
           <a href="/" className="text-blue-600 font-semibold hover:underline">← Back</a>
           <span className="text-gray-500 text-sm">Question {current + 1} of {questions.length}</span>
+          {/* Timer */}
+          <div className={`flex items-center gap-2 border-2 px-4 py-2 rounded-xl font-bold text-lg ${timerBg} ${timerColor}`}>
+            ⏱ {timeLeft}s
+          </div>
         </div>
 
         {/* Progress Bar */}
