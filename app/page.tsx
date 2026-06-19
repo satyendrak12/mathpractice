@@ -22,6 +22,7 @@ export default function Home() {
       .from('chapters')
       .select('*')
       .order('class', { ascending: true })
+      .order('sort_order', { ascending: true })
       .then(({ data }) => setChapters(data || []))
     return () => listener.subscription.unsubscribe()
   }, [])
@@ -34,23 +35,6 @@ export default function Home() {
   const class11 = chapters.filter(c => c.class === 11)
   const class12 = chapters.filter(c => c.class === 12)
 
-  const chapterIcons: { [key: string]: string } = {
-    'Sets': '🔢',
-    'Trigonometric Functions': '📐',
-    'Permutation and Combination': '🔄',
-    'Complex Numbers': '🔮',
-    'Quadratic Equations': '📊',
-    'Straight Lines': '📏',
-    'Limits and Derivatives': '∞',
-    'Statistics': '📈',
-    'Probability': '🎲',
-    'Integration': '∫',
-    'Matrices': '🔲',
-    'Determinants': '🔑',
-    'Differentiation': '📉',
-    'Application of Derivatives': '🎯',
-  }
-
   return (
     <main className="min-h-screen bg-white">
 
@@ -62,29 +46,29 @@ export default function Home() {
             <span className="text-xl font-bold text-gray-900">MathPractice</span>
           </div>
           <div className="flex items-center gap-3">
+            <a href="/doubt">
+              <button className="bg-green-50 text-green-600 font-semibold px-3 py-2 rounded-lg hover:bg-green-100 transition text-sm">
+                🤖 AI Solver
+              </button>
+            </a>
+            <a href="/flashcards">
+              <button className="bg-yellow-50 text-yellow-600 font-semibold px-3 py-2 rounded-lg hover:bg-yellow-100 transition text-sm">
+                🃏 Flashcards
+              </button>
+            </a>
+            <a href="/leaderboard">
+              <button className="bg-purple-50 text-purple-600 font-semibold px-3 py-2 rounded-lg hover:bg-purple-100 transition text-sm">
+                🏆 Leaderboard
+              </button>
+            </a>
+            <a href="/dashboard">
+              <button className="bg-blue-50 text-blue-600 font-semibold px-3 py-2 rounded-lg hover:bg-blue-100 transition text-sm">
+                📊 Dashboard
+              </button>
+            </a>
+            <div className="w-px h-6 bg-gray-200" />
             {user ? (
               <>
-                <a href="/doubt">
-                  <button className="bg-green-50 text-green-600 font-semibold px-3 py-2 rounded-lg hover:bg-green-100 transition text-sm">
-                    🤖 AI Solver
-                  </button>
-                </a>
-                <a href="/flashcards">
-                  <button className="bg-yellow-50 text-yellow-600 font-semibold px-3 py-2 rounded-lg hover:bg-yellow-100 transition text-sm">
-                    🃏 Flashcards
-                  </button>
-                </a>
-                <a href="/leaderboard">
-                  <button className="bg-purple-50 text-purple-600 font-semibold px-3 py-2 rounded-lg hover:bg-purple-100 transition text-sm">
-                    🏆 Leaderboard
-                  </button>
-                </a>
-                <a href="/dashboard">
-                  <button className="bg-blue-50 text-blue-600 font-semibold px-3 py-2 rounded-lg hover:bg-blue-100 transition text-sm">
-                    📊 Dashboard
-                  </button>
-                </a>
-                <div className="w-px h-6 bg-gray-200" />
                 <img
                   src={user.user_metadata?.avatar_url || 'https://www.gravatar.com/avatar/?d=mp'}
                   alt="avatar"
@@ -160,10 +144,10 @@ export default function Home() {
       <div className="max-w-6xl mx-auto px-6 pb-16">
         <div className="grid grid-cols-4 gap-6">
           {[
-            { number: '15+', label: 'Chapters', icon: '📚', color: 'blue' },
-            { number: '175+', label: 'Questions', icon: '❓', color: 'purple' },
-            { number: '30s', label: 'Timer per Question', icon: '⏱', color: 'orange' },
-            { number: 'Free', label: 'Forever', icon: '🎉', color: 'green' },
+            { number: '21+', label: 'Chapters', icon: '📚' },
+            { number: '175+', label: 'Questions', icon: '❓' },
+            { number: '20min', label: 'Per Quiz', icon: '⏱' },
+            { number: 'Free', label: 'Forever', icon: '🎉' },
           ].map((stat, index) => (
             <div key={index} className="bg-gray-50 rounded-2xl p-6 text-center border border-gray-100 hover:border-blue-200 hover:bg-blue-50 transition">
               <div className="text-3xl mb-2">{stat.icon}</div>
@@ -184,10 +168,10 @@ export default function Home() {
           <div className="grid grid-cols-3 gap-6">
             {[
               { icon: '🤖', title: 'AI Doubt Solver', desc: 'Get instant step-by-step solutions to any maths doubt using AI' },
-              { icon: '⏱', title: '30 Second Timer', desc: 'Practice under exam-like pressure with a countdown timer' },
+              { icon: '⏱', title: '20 Minute Quiz Timer', desc: 'Practice under exam-like pressure with a countdown timer' },
               { icon: '📊', title: 'Performance Analytics', desc: 'Track your progress chapter-wise and identify weak areas' },
               { icon: '🏆', title: 'Leaderboard', desc: 'Compete with other students and climb the rankings' },
-              { icon: '💡', title: 'Instant Explanations', desc: 'Get detailed explanations after every question' },
+              { icon: '🃏', title: 'AI Flashcards', desc: 'Generate flashcards from any chapter or your own notes PDF' },
               { icon: '📱', title: 'Works Everywhere', desc: 'Practice on any device — mobile, tablet or desktop' },
             ].map((feature, index) => (
               <div key={index} className="bg-white rounded-2xl p-6 border border-gray-100 hover:border-blue-200 hover:shadow-md transition">
@@ -200,51 +184,64 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Chapters */}
+      {/* Classes Section */}
       <div id="chapters" className="max-w-6xl mx-auto px-6 py-16">
-
-        {/* Class 11 */}
-        <div className="mb-12">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="bg-blue-600 text-white font-bold px-4 py-2 rounded-xl text-sm">Class 11</div>
-            <h2 className="text-2xl font-extrabold text-gray-900">Chapters</h2>
-            <div className="flex-1 h-px bg-gray-100" />
-            <span className="text-sm text-gray-400">{class11.length} chapters</span>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {class11.map(chapter => (
-              <a href={`/quiz/${chapter.id}`} key={chapter.id}>
-                <div className="bg-white border-2 border-gray-100 rounded-2xl p-5 hover:border-blue-400 hover:shadow-lg cursor-pointer transition group">
-                  <div className="text-3xl mb-3">{chapterIcons[chapter.name] || '📘'}</div>
-                  <h3 className="font-bold text-gray-800 text-base group-hover:text-blue-600 transition leading-tight">{chapter.name}</h3>
-                  <p className="text-sm text-blue-500 mt-2 font-semibold">Start Quiz →</p>
-                </div>
-              </a>
-            ))}
-          </div>
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-extrabold text-gray-900 mb-3">Choose Your Class</h2>
+          <p className="text-gray-500">Select your class to see all chapters and start practicing</p>
         </div>
 
-        {/* Class 12 */}
-        <div>
-          <div className="flex items-center gap-3 mb-6">
-            <div className="bg-purple-600 text-white font-bold px-4 py-2 rounded-xl text-sm">Class 12</div>
-            <h2 className="text-2xl font-extrabold text-gray-900">Chapters</h2>
-            <div className="flex-1 h-px bg-gray-100" />
-            <span className="text-sm text-gray-400">{class12.length} chapters</span>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {class12.map(chapter => (
-              <a href={`/quiz/${chapter.id}`} key={chapter.id}>
-                <div className="bg-white border-2 border-gray-100 rounded-2xl p-5 hover:border-purple-400 hover:shadow-lg cursor-pointer transition group">
-                  <div className="text-3xl mb-3">{chapterIcons[chapter.name] || '📗'}</div>
-                  <h3 className="font-bold text-gray-800 text-base group-hover:text-purple-600 transition leading-tight">{chapter.name}</h3>
-                  <p className="text-sm text-purple-500 mt-2 font-semibold">Start Quiz →</p>
-                </div>
-              </a>
-            ))}
-          </div>
-        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 
+          {/* Class 11 Card */}
+          <a href="/class11">
+            <div className="bg-gradient-to-br from-blue-500 to-blue-700 rounded-3xl p-8 text-white hover:shadow-2xl transition cursor-pointer group">
+              <div className="text-5xl mb-4">📘</div>
+              <h2 className="text-3xl font-extrabold mb-2">Class 11</h2>
+              <p className="text-blue-100 mb-6">NCERT Mathematics — All 14 chapters with MCQ practice</p>
+              <div className="flex items-center justify-between">
+                <div className="flex gap-4">
+                  <div>
+                    <p className="text-2xl font-bold">{class11.length}</p>
+                    <p className="text-blue-200 text-xs">Chapters</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">175+</p>
+                    <p className="text-blue-200 text-xs">Questions</p>
+                  </div>
+                </div>
+                <div className="bg-white text-blue-600 font-bold px-5 py-2 rounded-xl group-hover:bg-blue-50 transition">
+                  Start →
+                </div>
+              </div>
+            </div>
+          </a>
+
+          {/* Class 12 Card */}
+          <a href="/class12">
+            <div className="bg-gradient-to-br from-purple-500 to-purple-700 rounded-3xl p-8 text-white hover:shadow-2xl transition cursor-pointer group">
+              <div className="text-5xl mb-4">📗</div>
+              <h2 className="text-3xl font-extrabold mb-2">Class 12</h2>
+              <p className="text-purple-100 mb-6">NCERT Mathematics — All chapters with MCQ practice</p>
+              <div className="flex items-center justify-between">
+                <div className="flex gap-4">
+                  <div>
+                    <p className="text-2xl font-bold">{class12.length}</p>
+                    <p className="text-purple-200 text-xs">Chapters</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">90+</p>
+                    <p className="text-purple-200 text-xs">Questions</p>
+                  </div>
+                </div>
+                <div className="bg-white text-purple-600 font-bold px-5 py-2 rounded-xl group-hover:bg-purple-50 transition">
+                  Start →
+                </div>
+              </div>
+            </div>
+          </a>
+
+        </div>
       </div>
 
       {/* CTA Section */}

@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
 
@@ -16,8 +16,8 @@ export default function QuizPage() {
   const [skipped, setSkipped] = useState(0)
   const [user, setUser] = useState<any>(null)
   const [reviewList, setReviewList] = useState<any[]>([])
-  const [timeLeft, setTimeLeft] = useState(30)
-  const [timerActive, setTimerActive] = useState(true)
+  const [timeLeft, setTimeLeft] = useState(20 * 60) // 20 minutes
+  const timerRef = useRef<any>(null)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -28,30 +28,31 @@ export default function QuizPage() {
         .from('questions')
         .select('*')
         .eq('chapter_id', id)
+        .limit(15)
       if (error) console.error(error)
       setQuestions(data || [])
     }
     fetchQuestions()
   }, [id])
 
+  // Global timer
   useEffect(() => {
-    if (!timerActive || answered || questions.length === 0) return
-    if (timeLeft === 0) {
-      handleSkip()
-      return
-    }
-    const timer = setTimeout(() => setTimeLeft(prev => prev - 1), 1000)
-    return () => clearTimeout(timer)
-  }, [timeLeft, timerActive, answered, questions])
-
-  useEffect(() => {
-    setTimeLeft(30)
-    setTimerActive(true)
-  }, [current])
+    if (questions.length === 0 || showResult) return
+    timerRef.current = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          clearInterval(timerRef.current)
+          setShowResult(true)
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+    return () => clearInterval(timerRef.current)
+  }, [questions, showResult])
 
   async function handleAnswer(option: string) {
     if (answered) return
-    setTimerActive(false)
     setSelected(option)
     setAnswered(true)
 
@@ -82,12 +83,12 @@ export default function QuizPage() {
       setSelected(null)
       setAnswered(false)
     } else {
+      clearInterval(timerRef.current)
       setShowResult(true)
     }
   }
 
   function handleSkip() {
-    setTimerActive(false)
     setSkipped(prev => prev + 1)
     setReviewList(prev => [...prev, {
       question: questions[current].question_text,
@@ -99,6 +100,13 @@ export default function QuizPage() {
     handleNext()
   }
 
+  // Format time
+  const minutes = Math.floor(timeLeft / 60)
+  const seconds = timeLeft % 60
+  const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`
+  const timerColor = timeLeft > 300 ? 'text-green-600' : timeLeft > 60 ? 'text-orange-500' : 'text-red-500'
+  const timerBg = timeLeft > 300 ? 'bg-green-50 border-green-200' : timeLeft > 60 ? 'bg-orange-50 border-orange-200' : 'bg-red-50 border-red-200'
+
   if (questions.length === 0) return (
     <div className="min-h-screen flex items-center justify-center">
       <p className="text-xl text-gray-500">Loading questions...</p>
@@ -109,7 +117,6 @@ export default function QuizPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-10">
       <div className="max-w-2xl mx-auto px-4">
 
-        {/* Score Card */}
         <div className="bg-white rounded-2xl shadow-lg p-10 text-center mb-8">
           <div className="text-6xl mb-4">🎉</div>
           <h2 className="text-3xl font-extrabold text-blue-600">Quiz Complete!</h2>
@@ -141,7 +148,6 @@ export default function QuizPage() {
           </div>
         </div>
 
-        {/* Question Review */}
         <h3 className="text-xl font-bold text-gray-800 mb-4">📝 Question Review</h3>
         <div className="flex flex-col gap-4">
           {reviewList.map((item, index) => (
@@ -154,7 +160,7 @@ export default function QuizPage() {
                 <p className="text-sm font-medium text-green-600">Correct answer: {item.correct}</p>
               )}
               <p className="text-sm text-gray-500 mt-2">💡 {item.explanation}</p>
-           {!item.isCorrect && (
+              {!item.isCorrect && (
                 <button
                   onClick={() => window.location.href = `/doubt?q=${encodeURIComponent(item.question)}`}
                   className="mt-3 bg-purple-50 text-purple-600 border border-purple-200 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-100 transition"
@@ -165,14 +171,11 @@ export default function QuizPage() {
             </div>
           ))}
         </div>
-
       </div>
     </div>
   )
 
   const q = questions[current]
-  const timerColor = timeLeft > 15 ? 'text-green-600' : timeLeft > 5 ? 'text-orange-500' : 'text-red-500'
-  const timerBg = timeLeft > 15 ? 'bg-green-50 border-green-200' : timeLeft > 5 ? 'bg-orange-50 border-orange-200' : 'bg-red-50 border-red-200'
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-10">
@@ -181,9 +184,10 @@ export default function QuizPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <a href="/" className="text-blue-600 font-semibold hover:underline">← Back</a>
-          <span className="text-gray-500 text-sm">Question {current + 1} of {questions.length}</span>
+          <span className="text-gray-500 text-sm font-medium">Question {current + 1} of {questions.length}</span>
+          {/* Global Timer */}
           <div className={`flex items-center gap-2 border-2 px-4 py-2 rounded-xl font-bold text-lg ${timerBg} ${timerColor}`}>
-            ⏱ {timeLeft}s
+            ⏱ {timeString}
           </div>
         </div>
 

@@ -52,7 +52,6 @@ export default function Dashboard() {
   const correctAttempts = attempts.filter(a => a.is_correct).length
   const accuracy = totalAttempts > 0 ? Math.round((correctAttempts / totalAttempts) * 100) : 0
 
-  // Group by chapter
   const chapterMap: any = {}
   attempts.forEach(a => {
     const chapterName = a.questions?.chapters?.name || 'Unknown'
@@ -71,10 +70,10 @@ export default function Dashboard() {
       {/* Navbar */}
       <nav className="bg-white shadow-sm px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-2xl">📐</span>
+          <div className="bg-blue-600 text-white w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm">M</div>
           <span className="text-xl font-bold text-blue-600">MathPractice</span>
         </div>
-        <a href="/" className="text-blue-600 font-semibold hover:underline">← Back to Home</a>
+        <a href="/" className="text-blue-600 font-semibold hover:underline text-sm">← Back to Home</a>
       </nav>
 
       <div className="max-w-4xl mx-auto px-4 py-10">
@@ -86,12 +85,27 @@ export default function Dashboard() {
             alt="avatar"
             className="w-16 h-16 rounded-full border-4 border-blue-200"
           />
-          <div>
+          <div className="flex-1">
             <h1 className="text-2xl font-bold text-gray-800">
               {user.user_metadata?.full_name || user.email}
             </h1>
             <p className="text-gray-500">Student Dashboard</p>
           </div>
+          <button
+            onClick={async () => {
+              await supabase.auth.signOut()
+              await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                  redirectTo: 'http://localhost:3000',
+                  queryParams: { prompt: 'select_account' }
+                }
+              })
+            }}
+            className="bg-gray-100 text-gray-600 font-semibold px-4 py-2 rounded-lg hover:bg-gray-200 transition text-sm"
+          >
+            🔄 Switch Account
+          </button>
         </div>
 
         {/* Stats */}
@@ -134,7 +148,6 @@ export default function Dashboard() {
                     {chapter.correct}/{chapter.total} correct
                   </span>
                 </div>
-                {/* Progress bar */}
                 <div className="w-full bg-gray-200 rounded-full h-3">
                   <div
                     className="bg-green-500 h-3 rounded-full transition-all"
